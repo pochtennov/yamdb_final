@@ -31,6 +31,11 @@ jobs:
     runs-on: ubuntu-latest
     needs: tests
     steps:
+      - name: Make migrations and collect static
+        run: |
+          python manage.py migrate auth
+          python manage.py migrate --run-syncdb
+          python manage.py collectstatic --no-input
       - name: Check out the repo
         uses: actions/checkout@v2
       - name: Set up Docker Buildx
