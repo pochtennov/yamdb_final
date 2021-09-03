@@ -17,14 +17,13 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from .custom_mixins import CreateDelListViewSet
 from .filters import TitleFilter
 from .models import Category, Genre, Review, Title
-from .permissions import (
-    IsAdmin, IsAdminOrReadOnly, IsAuthorOrModeratorOrAdminOrReadOnly,
-)
-from .serializers import (
-    CategorySerializer, CommentSerializer, CreateUserSerializer,
-    GenreSerializer, ObtainTokenSerializer, ReviewSerializer,
-    TitleCreateSerializer, TitleGetSerializer, UserSerializer,
-)
+from .permissions import (IsAdmin, IsAdminOrReadOnly,
+                          IsAuthorOrModeratorOrAdminOrReadOnly)
+from .serializers import (CategorySerializer, CommentSerializer,
+                          CreateUserSerializer, GenreSerializer,
+                          ObtainTokenSerializer, ReviewSerializer,
+                          TitleCreateSerializer, TitleGetSerializer,
+                          UserSerializer)
 
 User = get_user_model()
 
