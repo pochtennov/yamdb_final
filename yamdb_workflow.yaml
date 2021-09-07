@@ -1,8 +1,7 @@
-name: Yamdb-app workflows
+name: Yamdb-app workflow
 
 on: push
     branches: [master]
-
 
 jobs:
   tests:
@@ -44,7 +43,7 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/infra:latest
+          tags: ${{ secrets.DOCKER_USERNAME }}/yamdb:latest
 
   deploy:
     runs-on: ubuntu-latest
@@ -56,12 +55,24 @@ jobs:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USER }}
           key: ${{ secrets.SSH_KEY }}
-          passphrase: ${{ secrets.PASSPHRASE }} # Если ваш ssh-ключ защищён фразой-паролем
+          passphrase: ${{ secrets.PASSPHRASE }}
+          stack_file_name: docker-compose.yaml
           script: |
-            # Выполняет pull образа с DockerHub
             sudo docker pull ${{ secrets.DOCKER_USERNAME }}/yamdb
-            sudo docker stop $(sudo docker ps -a -q)
-            sudo docker run --rm -d -p 8000:8000 ${{ secrets.DOCKER_USERNAME }}/yamdb
+            sudo docker-compose stop
+            sudo docker-compose rm web
+            rm -f .env
+            touch .env
+            echo DB_ENGINE=${{ secrets.DB_ENGINE }} >> .env
+            echo DB_NAME=${{ secrets.DB_NAME }} >> .env
+            echo POSTGRES_USER=${{ secrets.POSTGRES_USER }} >> .env
+            echo POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }} >> .env
+            echo DB_HOST=${{ secrets.DB_HOST }} >> .env
+            echo DB_PORT=${{ secrets.DB_PORT }} >> .env
+            sudo docker-compose up -d
+            sudo docker-compose exec -T web python manage.py migrate auth
+            sudo docker-compose exec -T web python manage.py migrate --run-syncdb
+            sudo docker-compose exec -T web python manage.py collectstatic --no-input
 
   send_message:
     runs-on: ubuntu-latest
@@ -72,4 +83,4 @@ jobs:
         with:
           to: ${{ secrets.TELEGRAM_TO }}
           token: ${{ secrets.TELEGRAM_TOKEN }}
-          message: ${{ github.workflows }} успешно выполнен!
+          message: Деплой успешно выполнен!
